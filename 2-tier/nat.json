@@ -1,0 +1,151 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "Cloudformation Basic JSON Template",
+
+  "Metadata" : {
+  
+  },
+
+  "Parameters" : {
+   
+  },
+
+  "Mappings" : {
+    
+  },
+
+  "Conditions" : {
+    
+  },
+
+  "Resources" : {
+   
+    "NatSecurityGroup" : {
+      "DependsOn" : ["PalindromeVPC"],
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "NAT Security Group",
+        "VpcId" : { "Ref" : "PalindromeVPC" },
+	"SecurityGroupIngress" : [{
+            "IpProtocol" : "tcp",
+            "FromPort" : "22",
+            "ToPort" : "22",
+            "CidrIp" : { "Ref" : "ServerAccess" }
+        },{
+            "IpProtocol" : "tcp",
+            "FromPort" : "3389",
+            "ToPort" : "3389",
+            "CidrIp" : { "Ref" : "ServerAccess" }
+        }],
+	"Tags" : [
+	  { "Key" : "Name", "Value" : "NAT Security Group" }
+        ]
+      }
+    },
+
+    "NatSecurityGroupIngress1" : {
+      "DependsOn" : ["NatSecurityGroup"],
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+	"GroupId": { "Ref": "NatSecurityGroup" },
+	"IpProtocol": "icmp",
+	"FromPort": "-1",
+	"ToPort": "-1",
+	"SourceSecurityGroupId": { "Ref": "NatSecurityGroup" }
+      }
+    },
+
+    "NatSecurityGroupIngress22" : {
+      "DependsOn" : ["NatSecurityGroup"],
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+	"GroupId": { "Ref": "NatSecurityGroup" },
+	"IpProtocol": "tcp",
+	"FromPort": "22",
+	"ToPort": "22",
+	"SourceSecurityGroupId": { "Ref": "NatSecurityGroup" }
+      }
+    },
+    
+    "NatSecurityGroupIngress3389" : {
+      "DependsOn" : ["NatSecurityGroup"],
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+	"GroupId": { "Ref": "NatSecurityGroup" },
+	"IpProtocol": "tcp",
+	"FromPort": "3389",
+	"ToPort": "3389",
+	"SourceSecurityGroupId": { "Ref": "NatSecurityGroup" }
+      }
+    },
+
+    "NatSecurityGroupIngress80" : {
+      "DependsOn" : ["NatSecurityGroup"],
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+	"GroupId": { "Ref": "NatSecurityGroup" },
+	"IpProtocol": "tcp",
+	"FromPort": "80",
+	"ToPort": "80",
+	"SourceSecurityGroupId": { "Ref": "NatSecurityGroup" }
+      }
+    },
+
+    "NatSecurityGroupIngress443" : {
+      "DependsOn" : ["NatSecurityGroup"],
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+	"GroupId": { "Ref": "NatSecurityGroup" },
+	"IpProtocol": "tcp",
+	"FromPort": "443",
+	"ToPort": "443",
+	"SourceSecurityGroupId": { "Ref": "NatSecurityGroup" }
+      }
+    },
+
+	"NAT" : 
+	{
+      		"DependsOn" : ["PublicSubnet","NatSecurityGroup"],
+      		"Type" : "AWS::EC2::Instance",
+      		"Properties" : 
+		{
+        		"InstanceType" : "t2.micro",
+        		"KeyName"  : { "Ref" : "KeyPairName" },
+        		"SourceDestCheck" : "false",
+        		"ImageId" : { "Fn::FindInMap" : [ "NatRegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+			"NetworkInterfaces" : 
+					[
+						{
+          						"GroupSet"                 : [{ "Ref" : "NatSecurityGroup" }],
+          						"AssociatePublicIpAddress" : "true",
+          						"DeviceIndex"              : "0",
+          "DeleteOnTermination"      : "true",
+          "SubnetId"                 : { "Ref" : "PublicSubnet" }
+        }],
+	"Tags" : [
+	  { "Key" : "Name", "Value" : "NAT" }
+        ],
+	"UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+	  "#!/bin/bash\n",
+	  "yum update -y && yum install -y yum-cron && chkconfig yum-cron on"
+	]]}}
+      }
+    },
+
+    "PrivateRoute" : {
+      "DependsOn" : ["PrivateRouteTable", "NAT"],
+      "Type" : "AWS::EC2::Route",
+      "Properties" : {
+        "RouteTableId" : { "Ref" : "PrivateRouteTable" },
+        "DestinationCidrBlock" : "0.0.0.0/0",
+        "InstanceId" : { "Ref" : "NAT" }
+      }
+    }
+
+  },
+
+  "Outputs" : {
+    
+  }
+}
