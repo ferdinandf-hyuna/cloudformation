@@ -18,3 +18,7 @@ The script is designed to use a domain that is already registered and has a zone
 Use the following command to validate the template;
 
 `aws cloudformation validate-template --template-body file://s3_hosting_domain.json`
+
+Once validated, use the following command to deploy the Cloudformation Stack;
+
+`aws cloudformation create-stack --stack-name "S3-Hosting-Stack" --template-body file://s3_hosting_domain.json --parameters file://s3_hosting_parameters.json --capabilities CAPABILITY_NAMED_IAM`
