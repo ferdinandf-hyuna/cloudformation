@@ -12,3 +12,9 @@ The script is designed to use a domain that is already registered and has a zone
 - '**Errorpage**' - Supply the name of the error page i.e. the page displayed when 404s are encountered. e.g. 'error.html'
 - '**AddToDNSZoneFile**' - This is a yes/no toggle.  'yes' means allowing the template to create A records in the zone file specified in Route 53.  However, if you aren't using Route 53 as a Domain Registrar or don't want this template to manage the records, choose 'no'.
 - '**LoggingBucket**' - Specify the name an existing bucket the HTTP logs will reside in.
+
+### Deploy Template
+
+Use the following command to validate the template;
+
+`aws cloudformation validate-template --template-body file://s3_hosting_domain.json`
