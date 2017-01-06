@@ -1,0 +1,22 @@
+[
+	{
+		"ParameterKey": "RootDomainName",
+		"ParameterValue": "awstutorial.cloud"
+	},
+	{
+		"ParameterKey": "Indexpage",
+		"ParameterValue": "index.html"		
+	},
+	{
+		"ParameterKey": "Errorpage",
+		"ParameterValue": "error.html"	
+	},
+    {
+     	"ParameterKey": "AddToDNSZoneFile",
+		"ParameterValue": "yes"	   
+    },
+    {
+     	"ParameterKey": "LoggingBucket",
+		"ParameterValue": "palindrome-logs"	   
+    }
+]
