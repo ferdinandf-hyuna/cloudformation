@@ -8,16 +8,9 @@ The script is designed to use a domain that is already registered and has a zone
 ### Parameters
 
 - '**RootDomainName**' - Supply the name of the root domain registered in Route 53 e.g. 'domain.com' or 'awstutorial.cloud'
+- '**Indexpage**' - Supply the name of the index page i.e. the first page of the Website. e.g. index.html
+- '**Errorpage**' - Supply the name of the error page i.e. the page displayed when 404s are encountered. e.g. error.html
 
-
-	{
-		"ParameterKey": "Indexpage",
-		"ParameterValue": "index.html"		
-	},
-	{
-		"ParameterKey": "Errorpage",
-		"ParameterValue": "error.html"	
-	},
     {
      	"ParameterKey": "AddToDNSZoneFile",
 		"ParameterValue": "yes"	   
