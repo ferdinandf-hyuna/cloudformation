@@ -50,6 +50,16 @@
             "AllowedValues" : [ "no", "yes" ],
             "ConstraintDescription" : "Must be one of the following - no | yes"
         },
+
+        "AddIAMGroupAndPolicy" :
+        {
+            "Default": "no",
+            "Description" : "Should and IAM and Group and Policy be created?",
+            "Type" : "String",
+            "AllowedValues" : [ "no", "yes" ],
+            "ConstraintDescription" : "Must be one of the following - no | yes"
+        },
+
         "LoggingBucket" :
         {
             "Description" : "Logs for Web Hosting Access should be stored in this bucket.",
@@ -62,7 +72,9 @@
     "Conditions" : 
     {
             "AddARecords": { "Fn::Equals" : [ { "Ref" : "AddToDNSZoneFile" }, "yes" ] },
-            "DontAddARecords": { "Fn::Equals" : [ { "Ref" : "AddToDNSZoneFile" }, "no" ] }
+            "DontAddARecords": { "Fn::Equals" : [ { "Ref" : "AddToDNSZoneFile" }, "no" ] },
+            "AddIAM": { "Fn::Equals" : [ { "Ref" : "AddIAMGroupAndPolicy" }, "yes" ] },
+            "DontIAM": { "Fn::Equals" : [ { "Ref" : "AddIAMGroupAndPolicy" }, "no" ] }
     },
 
     "Resources" : 
@@ -131,6 +143,43 @@
             }
         },
 
+        "IAMAccessGroup" :
+        {
+            "Type": "AWS::IAM::Group",
+            "Condition" : "AddIAM",
+            "Properties": 
+            {
+                "GroupName": { "Fn::Join" : ["", ["S3-Hosting-Access-", {"Ref":"RootDomainName"}]] }
+            }
+        },
+
+        "IAMAccessPolicy" :
+        {
+            "Type" : "AWS::IAM::Policy",
+            "Condition" : "AddIAM",
+            "Properties" : 
+            {
+                "PolicyName" : { "Fn::Join" : ["", ["S3-Hosting-Access-Policy-", {"Ref":"RootDomainName"}]] },
+                "PolicyDocument" : 
+                {
+                    "Version" : "2012-10-17",
+                    "Statement": 
+                    [{
+                        "Effect"   : "Allow",
+                        "Action"   : 
+                        [
+                            "s3:DeleteObject",
+                            "s3:GetObject",
+                            "s3:ListBucket",
+                            "s3:PutObject"
+                        ],
+                       "Resource" : { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "RootDomainName" } , "/*" ]]}
+                    }]
+                },
+                "Groups" : [ { "Ref" : "IAMAccessGroup" } ]
+            }
+        },
+
         "DNS" : 
         {
             "Type" : "AWS::Route53::RecordSetGroup",
@@ -153,16 +202,13 @@
                         }
                     },
                     {
-                        "Name" : 
+                        "Name" : { "Fn::Join" : ["", ["www.", {"Ref":"RootDomainName"}]] },
+                        "Type" : "A",
+                        "AliasTarget" : 
                         {
-                            "Fn::Join" : ["", ["www.", {"Ref":"RootDomainName"}]]
-                        },
-                        "Type" : "CNAME",
-                        "TTL" : "300",
-                        "ResourceRecords" : 
-                        [
-                            {"Fn::GetAtt":["RedirectBucket", "DomainName"]}
-                        ]
+                            "HostedZoneId" : {"Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "S3hostedzoneID"]},
+                            "DNSName" : {"Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "websiteendpoint"]}
+                        }
                     }]
             }
         }
