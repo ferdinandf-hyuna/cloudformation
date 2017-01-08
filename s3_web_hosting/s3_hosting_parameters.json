@@ -12,11 +12,15 @@
 		"ParameterValue": "error.html"	
 	},
     {
-     	"ParameterKey": "AddToDNSZoneFile",
-		"ParameterValue": "yes"	   
-    },
-    {
      	"ParameterKey": "LoggingBucket",
 		"ParameterValue": "palindrome-logs"	   
+    },
+    {
+     	"ParameterKey": "AddToDNSZoneFile",
+		"ParameterValue": "no"	   
+    },
+    {
+     	"ParameterKey": "AddIAMGroupAndPolicy",
+		"ParameterValue": "no"	   
     }
 ]
