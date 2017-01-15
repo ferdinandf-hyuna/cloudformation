@@ -143,6 +143,16 @@
             }
         },
 
+        "BucketLog" : 
+		{
+            "Type": "AWS::S3::Bucket",
+            "Properties": 
+			{
+                "BucketName" : { "Ref" : "LoggingBucket" },
+                "AccessControl": "LogDeliveryWrite"
+            }
+        },
+
         "IAMAccessGroup" :
         {
             "Type": "AWS::IAM::Group",
